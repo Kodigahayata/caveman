@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - skills/caveman/SKILL.md
+      - skills/cavecrew/SKILL.md
+      - agents/cavecrew-*.md
       - rules/caveman-activate.md
       - caveman-compress/SKILL.md
       - caveman-compress/scripts/**
@@ -37,6 +39,17 @@ jobs:
           mkdir -p .windsurf/skills/caveman
           cp skills/caveman/SKILL.md .windsurf/skills/caveman/SKILL.md
 
+      - name: Sync compress skill
+        run: |
+          # Sync to skills/compress (main location for Gemini CLI)
+          rm -rf skills/compress/scripts
+          cp caveman-compress/SKILL.md skills/compress/SKILL.md
+          sed -i 's/^name: caveman-compress$/name: compress/' skills/compress/SKILL.md
+          sed -i "s|The compression scripts live in \`caveman-compress/scripts/\` (adjacent to this SKILL.md). If the path is not immediately available, search for \`caveman-compress/scripts/__main__.py\`.|This SKILL.md lives alongside \`scripts/\` in the same directory. Find that directory.|" skills/compress/SKILL.md
+          sed -i 's|cd caveman-compress && python3|cd <directory_containing_this_SKILL.md> \&\& python3|' skills/compress/SKILL.md
+          cp -r caveman-compress/scripts skills/compress/scripts
+          rm -rf skills/compress/scripts/__pycache__
+
       - name: Sync compress skill to plugin
         run: |
           # Copy SKILL.md and patch name + process instructions for plugin context
@@ -48,6 +61,14 @@ jobs:
           rm -rf plugins/caveman/skills/compress/scripts
           cp -r caveman-compress/scripts plugins/caveman/skills/compress/scripts
           rm -rf plugins/caveman/skills/compress/scripts/__pycache__
+
+      - name: Sync cavecrew skill + agents to plugin
+        run: |
+          mkdir -p plugins/caveman/skills/cavecrew plugins/caveman/agents
+          cp skills/cavecrew/SKILL.md plugins/caveman/skills/cavecrew/SKILL.md
+          cp agents/cavecrew-investigator.md plugins/caveman/agents/cavecrew-investigator.md
+          cp agents/cavecrew-builder.md plugins/caveman/agents/cavecrew-builder.md
+          cp agents/cavecrew-reviewer.md plugins/caveman/agents/cavecrew-reviewer.md
 
       - name: Rebuild caveman.skill ZIP
         run: cd skills && zip -r ../caveman.skill caveman/
@@ -75,8 +96,13 @@ jobs:
         run: |
           git add \
             caveman/SKILL.md \
+            skills/compress/ \
             plugins/caveman/skills/compress/ \
             plugins/caveman/skills/caveman/SKILL.md \
+            plugins/caveman/skills/cavecrew/SKILL.md \
+            plugins/caveman/agents/cavecrew-investigator.md \
+            plugins/caveman/agents/cavecrew-builder.md \
+            plugins/caveman/agents/cavecrew-reviewer.md \
             .cursor/skills/caveman/SKILL.md \
             .windsurf/skills/caveman/SKILL.md \
             caveman.skill \
